@@ -154,7 +154,7 @@ zip_package() {
 	assert
 }
 
-do_falt_build() {
+do_flat_build() {
 	copy_files "${BIN_FILELIST[*]}" $RUBIKPIOUT/$FLATDIRNAME/$STORAGE
 	zip_package
 }
@@ -165,7 +165,7 @@ LOGFILE=rubikpi_build.log
 do_log_flag=0
 do_build_all_flag=0
 do_clean_flag=0
-do_falt_build_flag=0
+do_flat_build_flag=0
 
 if [ "$1" != "" ]; then
 	while true; do
@@ -174,7 +174,7 @@ if [ "$1" != "" ]; then
 			-a|--build_all)         do_build_all_flag=1 ;;
 			-l|--log)               do_log_flag=1;;
 			-c|--clean)             do_clean_flag=1 ;;
-			-p|--zip_flat_build)    do_falt_build_flag=1 ;;
+			-p|--zip_flat_build)    do_flat_build_flag=1 ;;
 		esac
 		shift
 
@@ -195,8 +195,8 @@ if [ "$1" != "" ]; then
 		do_build_all
 	fi
 
-	if [ ${do_falt_build_flag} -eq "1" ]; then
-		do_falt_build
+	if [ ${do_flat_build_flag} -eq "1" ]; then
+		do_flat_build
 	fi
 else
 	do_build_all
