@@ -29,8 +29,6 @@
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-set -e
-
 meta_dir=`pwd`
 
 assert() {
