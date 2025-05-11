@@ -39,6 +39,7 @@ CONFIG_FILE_DIR="${TOP_DIR}/arch/arm64/configs"
 KERNEL_CONFIG_FRAGMENTS="${CONFIG_FILE_DIR}/qcom_addons.config \
 						 ${CONFIG_FILE_DIR}/selinux.config \
 						 ${CONFIG_FILE_DIR}/rubikpi3.config"
+KERNEL_INCLUDE="${TOP_DIR}/include/"
 
 usage() {
 	echo "\033[1;37mUsage:\033[0m"
@@ -186,6 +187,7 @@ do_build_all()
 	fi
 
 	make ARCH=arm64 CROSS_COMPILE=aarch64-qcom-linux- LOCALVERSION="" dir-pkg INSTALL_MOD_STRIP=1 -j`nproc`
+	do_build_dtb
 }
 
 do_build_dtb()
@@ -194,7 +196,60 @@ do_build_dtb()
 		do_merge_config
 	fi
 
-	make ARCH=arm64 CROSS_COMPILE=aarch64-qcom-linux- LOCALVERSION="" -j`nproc` qcom/rubikpi3-6490.dtb
+	# make rubikpi3.dtb
+	DTC_FLAGS="-@ " make ARCH=arm64 CROSS_COMPILE=aarch64-qcom-linux- LOCALVERSION="" -j`nproc` qcom/rubikpi3.dtb
+
+	# make qcm6490-graphics.dtbo
+	make -C arch/arm64/boot/dts/qcom/graphics-devicetree \
+			-j`nproc` \
+			CC=aarch64-qcom-linux-gcc \
+			DTC=${TOP_DIR}/scripts/dtc/dtc \
+			KERNEL_INCLUDE=$KERNEL_INCLUDE \
+			qcm6490-graphics
+
+	# make qcm6490-display.dtbo
+	make -C arch/arm64/boot/dts/qcom/display-devicetree \
+			-j`nproc` \
+			CC=aarch64-qcom-linux-gcc \
+			DTC=${TOP_DIR}/scripts/dtc/dtc \
+			KERNEL_INCLUDE=$KERNEL_INCLUDE \
+			qcm6490-display
+
+	# make qcm6490-camera-idp.dtbo
+	make -C arch/arm64/boot/dts/qcom/camera-devicetree \
+			-j`nproc` \
+			CC=aarch64-qcom-linux-gcc \
+			DTC=${TOP_DIR}/scripts/dtc/dtc \
+			KERNEL_INCLUDE=$KERNEL_INCLUDE \
+			qcm6490-camera-idp
+
+
+	# make qcm6490-video.dtbo
+	make -C arch/arm64/boot/dts/qcom/video-devicetree \
+			-j`nproc` \
+			CC=aarch64-qcom-linux-gcc \
+			DTC=${TOP_DIR}/scripts/dtc/dtc \
+			KERNEL_INCLUDE=$KERNEL_INCLUDE \
+			qcm6490-video
+
+	# make rubikpi3-overlay.dtbo
+	make -C arch/arm64/boot/dts/thundercomm/rubikpi3 \
+			-j`nproc` \
+			CC=aarch64-qcom-linux-gcc \
+			DTC=${TOP_DIR}/scripts/dtc/dtc \
+			KERNEL_INCLUDE=$KERNEL_INCLUDE \
+			rubikpi3-overlay
+
+
+	# make rubikpi3-6490.dtb
+	${TOP_DIR}/scripts/dtc/fdtoverlay -v -i \
+		arch/arm64/boot/dts/qcom/rubikpi3.dtb \
+		arch/arm64/boot/dts/qcom/graphics-devicetree/gpu/qcm6490-graphics.dtbo \
+		arch/arm64/boot/dts/qcom/display-devicetree/display/qcm6490-display.dtbo \
+		arch/arm64/boot/dts/qcom/camera-devicetree/qcm6490-camera-idp.dtbo \
+		arch/arm64/boot/dts/qcom/video-devicetree/qcm6490-video.dtbo \
+		arch/arm64/boot/dts/thundercomm/rubikpi3/rubikpi3-overlay.dtbo \
+		-o arch/arm64/boot/dts/qcom/rubikpi3-6490.dtb
 }
 
 do_clean()
@@ -207,46 +262,38 @@ do_clean()
 
 do_before_compilation()
 {
-	if [ ! -e ${TOP_DIR}/rubikpi/.bc_config_done ]; then
-		cp -n ${TOP_DIR}/rubikpi/tools/pack/config/selinux.config \
-			${TOP_DIR}/arch/arm64/configs/selinux.config
+	local src_selinux="${TOP_DIR}/rubikpi/tools/pack/config/selinux.config"
+	local dst_selinux="${TOP_DIR}/arch/arm64/configs/selinux.config"
 
-		cp -n ${TOP_DIR}/rubikpi/tools/pack/dts/* \
-			${TOP_DIR}/arch/arm64/boot/dts/qcom
-	
-		cp -n ${TOP_DIR}/arch/arm64/boot/dts/thundercomm/rubikpi3/rubikpi3* \
-			${TOP_DIR}/arch/arm64/boot/dts/qcom
+	if [ ! -f "$dst_selinux" ]; then
+		cp -v "$src_selinux" "$dst_selinux"
+	fi
 
-		cp -n ${TOP_DIR}/rubikpi/tools/pack/include/msm-camera.h \
-				${TOP_DIR}/include/dt-bindings
+	local kbuild_file="${TOP_DIR}/techpack/display/msm/Kbuild"
+	local timestamp_pattern='^# CDEFINES += -DBUILD_TIMESTAMP='
+	if ! grep -qE "$timestamp_pattern" "$kbuild_file"; then
+		sed -i '/DBUILD_TIMESTAMP/c\# CDEFINES += -DBUILD_TIMESTAMP=\"$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')\"' "$kbuild_file"
+	fi
 
-		cp -n ${TOP_DIR}/rubikpi/tools/pack/makefile/Makefile \
-				${TOP_DIR}/techpack/
+	local techpack_kbuild="${TOP_DIR}/Kbuild"
+	local techpack_line='obj-y			+= techpack/'
+	if ! sed -n '99p' "$techpack_kbuild" | grep -qF "$techpack_line"; then
+		sed -i "99i$techpack_line" "$techpack_kbuild"
+	fi
 
-		sed -i '/DBUILD_TIMESTAMP/c\# CDEFINES += -DBUILD_TIMESTAMP=\"$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')\"' \
-			${TOP_DIR}/techpack/display/msm/Kbuild
-
-		sed -i "99iobj-y			+= techpack/" Kbuild
-
-		target_file=${TOP_DIR}/arch/arm64/boot/dts/qcom/Makefile
-		sed -i '2iifdef RUBIKPI_DTB_BUILD_ALL' ${target_file}
-		marker_line=$(grep -n '# rubikpi' "${target_file}" | cut -d: -f1)
-		if [ -z "$marker_line" ]; then
-			echo "error: no '# rubikpi' tag found"
-			exit 1
-		fi
-		insert_line=$((marker_line - 1))
-		sed -i "${insert_line}iendif" "${target_file}"
-
-		sed -i '/# rubikpi/,$d' "${target_file}"
-		cat <<'EOF' >> "$target_file"
-# rubikpi
-dtb-$(CONFIG_ARCH_QCOM)	+= rubikpi3-6490.dtb
-rubikpi3-6490-dtbs := \
-	rubikpi3.dtb qcm6490-graphics.dtbo qcm6490-display.dtbo \
-	qcm6490-camera-idp.dtbo qcm6490-video.dtbo rubikpi3-overlay.dtbo
-EOF
-		touch ${TOP_DIR}/rubikpi/.bc_config_done
+	local target_file="${TOP_DIR}/arch/arm64/boot/dts/qcom/Makefile"
+	if ! grep -q '^ifdef RUBIKPI_DTB_BUILD_ALL' "$target_file"; then
+		sed -i '2iifdef RUBIKPI_DTB_BUILD_ALL' "$target_file"
+	fi
+	local marker_line=$(grep -n '# rubikpi' "$target_file" | cut -d: -f1)
+	if [ -z "$marker_line" ]; then
+		echo "error: no '# rubikpi' tag found"
+		exit 1
+	fi
+	local ifdef_line=2
+	local end_range=$((marker_line - 1))
+	if ! sed -n "${ifdef_line},${end_range}p" "$target_file" | grep -q '^endif'; then
+		sed -i "${end_range}iendif" "$target_file"
 	fi
 }
 
