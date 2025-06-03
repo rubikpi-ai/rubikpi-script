@@ -62,8 +62,6 @@ LOGDIR="${meta_dir}/build_log/BuildLog_${RUBIKPI_ID}.${Buildtime}"
 DEF_LOG_FILE=/dev/null
 log_file=$DEF_LOG_FILE
 
-JUST_TEST="777"
-
 do_log() {
 	if [ "$1" = "1" ]; then
 		if [ ! -d $LOGDIR ]; then
