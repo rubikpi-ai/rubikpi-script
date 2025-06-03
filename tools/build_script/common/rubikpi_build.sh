@@ -152,6 +152,7 @@ zip_package() {
 	echo "zip -r $FLATDIRNAME.zip $FLATDIRNAME" 2>&1 | tee -a $log_file
 	zip -r $FLATDIRNAME.zip $FLATDIRNAME
 	assert
+ 	echo "just test !!!!!!!!!!!!!!!!!"
 }
 
 do_flat_build() {
