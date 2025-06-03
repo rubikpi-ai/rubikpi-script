@@ -41,6 +41,8 @@ KERNEL_CONFIG_FRAGMENTS="${CONFIG_FILE_DIR}/qcom_addons.config \
 						 ${CONFIG_FILE_DIR}/rubikpi3.config"
 KERNEL_INCLUDE="${TOP_DIR}/include/"
 
+JUST_TEST="666"
+
 usage() {
 	echo "\033[1;37mUsage:\033[0m"
 	echo "  bash $0 [options]"
