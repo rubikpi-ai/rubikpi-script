@@ -138,7 +138,7 @@ do_image_package()
 
 	cp ${TOP_DIR}/arch/arm64/boot/Image ${TOP_DIR}/rubikpi/tools/pack/image_temp
 
-	python3 ${TOP_DIR}/rubikpi/tools/pack/ukify build \
+	python3.10 ${TOP_DIR}/rubikpi/tools/pack/ukify build \
 		--efi-arch=aa64 \
 		--stub="${TOP_DIR}/rubikpi/tools/pack/linuxaa64.efi.stub" \
 		--linux="${TOP_DIR}/rubikpi/tools/pack/image_temp/Image" \
