@@ -37,7 +37,8 @@ TOP_DIR=`pwd`
 KERNEL_CONFIG="qcom_defconfig"
 CONFIG_FILE_DIR="${TOP_DIR}/arch/arm64/configs"
 KERNEL_CONFIG_FRAGMENTS="${CONFIG_FILE_DIR}/qcom_addons.config \
-						 ${CONFIG_FILE_DIR}/selinux.config \
+						 ${CONFIG_FILE_DIR}/selinux.cfg \
+						 ${CONFIG_FILE_DIR}/smack.cfg \
 						 ${CONFIG_FILE_DIR}/rubikpi3.config"
 KERNEL_INCLUDE="${TOP_DIR}/include/"
 
@@ -137,7 +138,7 @@ do_image_package()
 
 	cp ${TOP_DIR}/arch/arm64/boot/Image ${TOP_DIR}/rubikpi/tools/pack/image_temp
 
-	sudo python3.10 ${TOP_DIR}/rubikpi/tools/pack/ukify build \
+	python3 ${TOP_DIR}/rubikpi/tools/pack/ukify build \
 		--efi-arch=aa64 \
 		--stub="${TOP_DIR}/rubikpi/tools/pack/linuxaa64.efi.stub" \
 		--linux="${TOP_DIR}/rubikpi/tools/pack/image_temp/Image" \
@@ -148,7 +149,7 @@ do_image_package()
 	cp ${TOP_DIR}/rubikpi/tools/pack/efi.bin ${TOP_DIR}/rubikpi/tools/pack/image_temp
 	sudo mount ${TOP_DIR}/rubikpi/tools/pack/image_temp/efi.bin ${TOP_DIR}/rubikpi/tools/pack/image_temp/mnt --options rw
 
-	sudo cp ${TOP_DIR}/rubikpi/tools/pack/image_temp/linux-qcm6490-idp.efi ${TOP_DIR}/rubikpi/tools/pack/image_temp/mnt/ostree/poky-*/vmlinuz-6.6.52
+	sudo cp ${TOP_DIR}/rubikpi/tools/pack/image_temp/linux-qcm6490-idp.efi ${TOP_DIR}/rubikpi/tools/pack/image_temp/mnt/ostree/poky-*/vmlinuz-6.6.90
 	sudo umount ${TOP_DIR}/rubikpi/tools/pack/image_temp/mnt
 	sudo cp ${TOP_DIR}/rubikpi/tools/pack/image_temp/efi.bin ${TOP_DIR}/rubikpi/output/pack
 
@@ -208,12 +209,13 @@ do_build_dtb()
 			qcm6490-graphics
 
 	# make qcm6490-display.dtbo
-	make -C arch/arm64/boot/dts/qcom/display-devicetree \
-			-j`nproc` \
-			CC=aarch64-qcom-linux-gcc \
-			DTC=${TOP_DIR}/scripts/dtc/dtc \
-			KERNEL_INCLUDE=$KERNEL_INCLUDE \
-			qcm6490-display
+	# Default use of upstream static display devicetree
+	# make -C arch/arm64/boot/dts/qcom/display-devicetree \
+	# 		-j`nproc` \
+	# 		CC=aarch64-qcom-linux-gcc \
+	# 		DTC=${TOP_DIR}/scripts/dtc/dtc \
+	# 		KERNEL_INCLUDE=$KERNEL_INCLUDE \
+	# 		qcm6490-display
 
 	# make qcm6490-camera-idp.dtbo
 	make -C arch/arm64/boot/dts/qcom/camera-devicetree \
@@ -222,7 +224,6 @@ do_build_dtb()
 			DTC=${TOP_DIR}/scripts/dtc/dtc \
 			KERNEL_INCLUDE=$KERNEL_INCLUDE \
 			qcm6490-camera-idp
-
 
 	# make qcm6490-video.dtbo
 	make -C arch/arm64/boot/dts/qcom/video-devicetree \
@@ -240,12 +241,12 @@ do_build_dtb()
 			KERNEL_INCLUDE=$KERNEL_INCLUDE \
 			rubikpi3-overlay
 
-
 	# make rubikpi3-6490.dtb
+	# Default use of upstream static display devicetree
+	# arch/arm64/boot/dts/qcom/display-devicetree/display/qcm6490-display.dtbo \
 	${TOP_DIR}/scripts/dtc/fdtoverlay -v -i \
 		arch/arm64/boot/dts/qcom/rubikpi3.dtb \
 		arch/arm64/boot/dts/qcom/graphics-devicetree/gpu/qcm6490-graphics.dtbo \
-		arch/arm64/boot/dts/qcom/display-devicetree/display/qcm6490-display.dtbo \
 		arch/arm64/boot/dts/qcom/camera-devicetree/qcm6490-camera-idp.dtbo \
 		arch/arm64/boot/dts/qcom/video-devicetree/qcm6490-video.dtbo \
 		arch/arm64/boot/dts/thundercomm/rubikpi3/rubikpi3-overlay.dtbo \
@@ -262,11 +263,29 @@ do_clean()
 
 do_before_compilation()
 {
-	local src_selinux="${TOP_DIR}/rubikpi/tools/pack/config/selinux.config"
-	local dst_selinux="${TOP_DIR}/arch/arm64/configs/selinux.config"
+	local src_selinux="${TOP_DIR}/rubikpi/tools/pack/config/selinux.cfg"
+	local dst_selinux="${TOP_DIR}/arch/arm64/configs/selinux.cfg"
+	local src_smack="${TOP_DIR}/rubikpi/tools/pack/config/smack.cfg"
+	local dst_smack="${TOP_DIR}/arch/arm64/configs/smack.cfg"
+	local src_techpack_makefile="${TOP_DIR}/rubikpi/tools/pack/makefile/Makefile"
+	local dst_techpack_makefile="${TOP_DIR}/techpack/Makefile"
+	local src_msm_camera="${TOP_DIR}/rubikpi/tools/pack/include/msm-camera.h"
+	local dst_msm_camera="${TOP_DIR}/include/dt-bindings/msm-camera.h"
 
 	if [ ! -f "$dst_selinux" ]; then
 		cp -v "$src_selinux" "$dst_selinux"
+	fi
+
+	if [ ! -f "$dst_smack" ]; then
+		cp -v "$src_smack" "$dst_smack"
+	fi
+
+	if [ ! -f "$dst_techpack_makefile" ]; then
+		cp -v "$src_techpack_makefile" "$dst_techpack_makefile"
+	fi
+
+	if [ ! -f "$dst_msm_camera" ]; then
+		cp -v "$src_msm_camera" "$dst_msm_camera"
 	fi
 
 	local kbuild_file="${TOP_DIR}/techpack/display/msm/Kbuild"
@@ -275,11 +294,12 @@ do_before_compilation()
 		sed -i '/DBUILD_TIMESTAMP/c\# CDEFINES += -DBUILD_TIMESTAMP=\"$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')\"' "$kbuild_file"
 	fi
 
-	local techpack_kbuild="${TOP_DIR}/Kbuild"
-	local techpack_line='obj-y			+= techpack/'
-	if ! sed -n '99p' "$techpack_kbuild" | grep -qF "$techpack_line"; then
-		sed -i "99i$techpack_line" "$techpack_kbuild"
-	fi
+	# Default use of upstream static display devicetree
+	# local techpack_kbuild="${TOP_DIR}/Kbuild"
+	# local techpack_line='obj-y			+= techpack/'
+	# if ! sed -n '99p' "$techpack_kbuild" | grep -qF "$techpack_line"; then
+	# 	sed -i "99i$techpack_line" "$techpack_kbuild"
+	# fi
 
 	local target_file="${TOP_DIR}/arch/arm64/boot/dts/qcom/Makefile"
 	if ! grep -q '^ifdef RUBIKPI_DTB_BUILD_ALL' "$target_file"; then
