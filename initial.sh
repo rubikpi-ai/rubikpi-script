@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # CAM/AI     Ubuntu Server
 sudo add-apt-repository -yn ppa:ubuntu-qcom-iot/qcom-noble-ppa
 sudo sed -i '$a deb http://apt.rubikpi.ai ppa main' /etc/apt/sources.list
