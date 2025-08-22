@@ -7,5 +7,6 @@ Helps you quickly enable RUBIK Pi's peripheral functions. (CAM, AI, Audio, etc.)
 Execute the following command on the RUBIK Pi 3 terminal:
 
 ```bash
-bash initial.sh
+wget https://github.com/rubikpi-ai/rubikpi-script/raw/refs/heads/linux_distro/initial.sh
+sh initial.sh
 ```
