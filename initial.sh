@@ -1,5 +1,4 @@
-#!/bin/bash
-set -e
+#!/bin/sh -ex
 
 REPO_ENTRY="deb http://apt.rubikpi.ai ppa main"
 HOST_ENTRY="151.106.120.85 apt.rubikpi.ai"
