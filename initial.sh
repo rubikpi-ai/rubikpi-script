@@ -10,7 +10,6 @@ USER_NAME="ubuntu"
 
 add_ppa()
 {
-	sudo add-apt-repository -yn ppa:ubuntu-qcom-iot/qcom-noble-ppa
 	if ! grep -q "^[^#]*$REPO_ENTRY" /etc/apt/sources.list; then
 		echo "$REPO_ENTRY" | sudo tee -a /etc/apt/sources.list >/dev/null
 	fi
