@@ -1,61 +1,143 @@
-#!/bin/sh -ex
+#!/bin/sh
+# Parameter-based dispatcher for UbunInitScripts
+# Helps you quickly enable RUBIK Pi's peripheral functions (CAM, AI, Audio, etc.)
 
-REPO_ENTRY="deb http://apt.rubikpi.ai ppa main"
-HOST_ENTRY="151.106.120.85 apt.rubikpi.ai"
-XDG_EXPORT="export XDG_RUNTIME_DIR=/run/user/\$(id -u)"
-CAMERA_SETTINGS="/var/cache/camera/camxoverridesettings.txt"
-USER_HOME="/home/ubuntu"
-USER_NAME="ubuntu"
+set -e
 
-add_ppa()
-{
-	if ! grep -q "^[^#]*$REPO_ENTRY" /etc/apt/sources.list; then
-		echo "$REPO_ENTRY" | sudo tee -a /etc/apt/sources.list >/dev/null
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+UBUN_SCRIPTS_DIR="$SCRIPT_DIR/UbunInitScripts"
+
+# Usage function with colored output
+usage() {
+	printf "\033[1;37mUsage:\033[0m\n"
+	printf "  bash %s [options]\n" "$0"
+	printf "\n"
+	printf "\033[1;37mDescription:\033[0m\n"
+	printf "  Dispatcher script that calls specific scripts from UbunInitScripts directory\n"
+	printf "  Helps you quickly enable RUBIK Pi's peripheral functions (CAM, AI, Audio, etc.)\n"
+	printf "\n"
+	printf "\033[1;37mOptions:\033[0m\n"
+	printf "\033[1;37m  -h, --help\033[0m              display this help message\n"
+	printf "\033[1;37m  --dloadpkgs\033[0m             download and install QNN/SNPE packages and Edge Impulse\n"
+	printf "\033[1;37m  --ide-install\033[0m           run comprehensive IDE installation script\n"
+	printf "\033[1;37m  --sethostname=<name>\033[0m    set system hostname to specified name\n"
+	printf "\033[1;37m  --reboot\033[0m                pass --reboot flag to ide-install script\n"
+	printf "\n"
+	printf "\033[1;37mExamples:\033[0m\n"
+	printf "  bash %s                          # Run all scripts in sequence\n" "$0"
+	printf "  bash %s --dloadpkgs               # Only download packages\n" "$0"
+	printf "  bash %s --ide-install            # Only run IDE installation\n" "$0"
+	printf "  bash %s --sethostname=mypi       # Only set hostname\n" "$0"
+	printf "  bash %s --ide-install --reboot   # Run IDE install with reboot\n" "$0"
+	printf "\n"
+	printf "\033[1;37mAvailable Scripts:\033[0m\n"
+	printf "  dloadpkgs.sh    - Downloads QNN, SNPE packages and Edge Impulse setup\n"
+	printf "  ide_install.sh  - Comprehensive installation of repositories, packages, and configuration\n"
+	printf "  sethostname.sh  - Sets system hostname\n"
+	printf "\n"
+}
+
+# Check if UbunInitScripts directory exists
+check_scripts_dir() {
+	if [ ! -d "$UBUN_SCRIPTS_DIR" ]; then
+		echo "Error: UbunInitScripts directory not found at: $UBUN_SCRIPTS_DIR"
+		exit 1
 	fi
-	if ! grep -q "$HOST_ENTRY" /etc/hosts; then
-		echo "$HOST_ENTRY" | sudo tee -a /etc/hosts >/dev/null
+}
+
+# Execute a script from UbunInitScripts directory
+execute_script() {
+	local script_name="$1"
+	shift
+	local script_path="$UBUN_SCRIPTS_DIR/$script_name"
+	
+	if [ ! -f "$script_path" ]; then
+		echo "Error: Script not found: $script_path"
+		exit 1
 	fi
-
-	# Add the GPG key for the apt.rubikpi.ai PPA
-	wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads/web/rubik-pi-3/tools/key.asc | sudo tee /etc/apt/trusted.gpg.d/rubikpi3.asc
-
-	sudo apt update -y
+	
+	if [ ! -x "$script_path" ]; then
+		chmod +x "$script_path"
+	fi
+	
+	echo "Executing: $script_name $*"
+	cd "$UBUN_SCRIPTS_DIR"
+	"./$script_name" "$@"
+	cd "$SCRIPT_DIR"
 }
 
-camera_install()
-{
-	sudo mkdir -p /opt
-	sudo chmod 755 /opt
-	grep -qxF "$XDG_EXPORT" "$USER_HOME/.bashrc" || echo "$XDG_EXPORT" >> "$USER_HOME/.bashrc"
-	sudo bash -c "grep -qxF '${XDG_EXPORT}' /root/.bashrc || echo '${XDG_EXPORT}' >> /root/.bashrc"
-	sudo mkdir -p /var/cache/camera
-	sudo sh -c "echo 'enableNCSService=FALSE' > $CAMERA_SETTINGS"
-
-	# CAM/AI -- QCOM PPA
-	sudo apt install -y \
-		gstreamer1.0-qcom-sample-apps qcom-sensors-test-apps \
-		gstreamer1.0-tools qcom-fastcv-binaries-dev qcom-video-firmware \
-		weston-autostart libgbm-msm1 qcom-adreno1 qcom-ib2c qcom-camera-server \
-		qcom-camx
-
-	# CAM/wiringrp -- RUBIK Pi PPA
-	sudo apt install -y \
-		rubikpi3-cameras
+# Main execution logic
+main() {
+	echo "RUBIK Pi 3 Initial Setup Script Dispatcher"
+	echo "=========================================="
+	
+	check_scripts_dir
+	
+	# If no arguments provided, run all scripts in sequence
+	if [ "$#" -eq 0 ]; then
+		echo "No specific options provided. Running all scripts in sequence..."
+		execute_script "ide_install.sh"
+		execute_script "dloadpkgs.sh"
+		return
+	fi
+	
+	# Parse arguments and execute accordingly
+	local run_dloadpkgs=0
+	local run_ide_install=0
+	local hostname=""
+	local ide_install_args=""
+	
+	while [ "$#" -gt 0 ]; do
+		case "$1" in
+			-h|--help)
+				usage
+				exit 0
+				;;
+			--dloadpkgs)
+				run_dloadpkgs=1
+				;;
+			--ide-install)
+				run_ide_install=1
+				;;
+			--sethostname=*)
+				hostname="${1#*=}"
+				if [ -z "$hostname" ]; then
+					echo "Error: hostname cannot be empty"
+					exit 1
+				fi
+				;;
+			--reboot)
+				ide_install_args="$ide_install_args --reboot"
+				;;
+			*)
+				echo "Unknown option: $1"
+				echo "Use --help for usage information"
+				exit 1
+				;;
+		esac
+		shift
+	done
+	
+	# Execute based on parsed arguments
+	if [ -n "$hostname" ]; then
+		execute_script "sethostname.sh" "$hostname"
+	fi
+	
+	if [ "$run_ide_install" -eq 1 ]; then
+		if [ -n "$hostname" ]; then
+			execute_script "ide_install.sh" "--hostname=$hostname" $ide_install_args
+		else
+			execute_script "ide_install.sh" $ide_install_args
+		fi
+	fi
+	
+	if [ "$run_dloadpkgs" -eq 1 ]; then
+		execute_script "dloadpkgs.sh"
+	fi
+	
+	echo "Script execution completed successfully!"
 }
 
-rubikpi_software_install()
-{
-	sudo apt install -y \
-		wiringrp wiringrp-python
-}
-
-# start of the script
-add_ppa
-camera_install
-rubikpi_software_install
-
-sudo apt upgrade -y
-
-echo "Setup completed. System will reboot in 10 seconds..."
-sleep 10
-sudo reboot
+# Start the script
+main "$@"
