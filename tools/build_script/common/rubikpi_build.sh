@@ -114,7 +114,7 @@ do_dtb_package()
 
 	mkdir -p ${TOP_DIR}/rubikpi/output/pack
 
-	cp ${TOP_DIR}/arch/arm64/boot/dts/qcom/rubikpi3-6490.dtb ${TOP_DIR}/rubikpi/tools/pack/dtb_temp/dtb/combined-dtb.dtb
+	cp ${TOP_DIR}/arch/arm64/boot/dts/qcom/combined-dtb.dtb ${TOP_DIR}/rubikpi/tools/pack/dtb_temp/dtb/combined-dtb.dtb
 
 	build_fat_img ${TOP_DIR}/rubikpi/tools/pack/dtb_temp/dtb ${TOP_DIR}/rubikpi/output/pack/dtb.bin
 
@@ -138,7 +138,7 @@ do_image_package()
 
 	cp ${TOP_DIR}/arch/arm64/boot/Image ${TOP_DIR}/rubikpi/tools/pack/image_temp
 
-	python3.10 ${TOP_DIR}/rubikpi/tools/pack/ukify build \
+	python3 ${TOP_DIR}/rubikpi/tools/pack/ukify build \
 		--efi-arch=aa64 \
 		--stub="${TOP_DIR}/rubikpi/tools/pack/linuxaa64.efi.stub" \
 		--linux="${TOP_DIR}/rubikpi/tools/pack/image_temp/Image" \
@@ -197,8 +197,8 @@ do_build_dtb()
 		do_merge_config
 	fi
 
-	# make rubikpi3.dtb
-	DTC_FLAGS="-@ " make ARCH=arm64 CROSS_COMPILE=aarch64-qcom-linux- LOCALVERSION="" -j`nproc` qcom/rubikpi3.dtb
+	# make qcs6490-thundercomm-rubikpi3.dtb
+	DTC_FLAGS="-@ " make ARCH=arm64 CROSS_COMPILE=aarch64-qcom-linux- LOCALVERSION="" -j`nproc` qcom/qcs6490-thundercomm-rubikpi3.dtb
 
 	# make qcm6490-graphics.dtbo
 	make -C arch/arm64/boot/dts/qcom/graphics-devicetree \
@@ -241,16 +241,16 @@ do_build_dtb()
 			KERNEL_INCLUDE=$KERNEL_INCLUDE \
 			rubikpi3-overlay
 
-	# make rubikpi3-6490.dtb
+	# make combined-dtb.dtb
 	# Default use of upstream static display devicetree
 	# arch/arm64/boot/dts/qcom/display-devicetree/display/qcm6490-display.dtbo \
 	${TOP_DIR}/scripts/dtc/fdtoverlay -v -i \
-		arch/arm64/boot/dts/qcom/rubikpi3.dtb \
+		arch/arm64/boot/dts/qcom/qcs6490-thundercomm-rubikpi3.dtb \
 		arch/arm64/boot/dts/qcom/graphics-devicetree/gpu/qcm6490-graphics.dtbo \
 		arch/arm64/boot/dts/qcom/camera-devicetree/qcm6490-camera-idp.dtbo \
 		arch/arm64/boot/dts/qcom/video-devicetree/qcm6490-video.dtbo \
 		arch/arm64/boot/dts/thundercomm/rubikpi3/rubikpi3-overlay.dtbo \
-		-o arch/arm64/boot/dts/qcom/rubikpi3-6490.dtb
+		-o arch/arm64/boot/dts/qcom/combined-dtb.dtb
 }
 
 do_clean()
