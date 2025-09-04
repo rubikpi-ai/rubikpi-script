@@ -1,11 +1,14 @@
 #!/bin/sh -ex
 
+#Configuration used by the script
 REPO_ENTRY="deb http://apt.rubikpi.ai ppa main"
 HOST_ENTRY="151.106.120.85 apt.rubikpi.ai"
 XDG_EXPORT="export XDG_RUNTIME_DIR=/run/user/\$(id -u)"
 CAMERA_SETTINGS="/var/cache/camera/camxoverridesettings.txt"
-USER_HOME="/home/ubuntu"
-USER_NAME="ubuntu"
+
+# Common user and home dir for the ubuntu
+USER_NAME=ubuntu
+USER_HOME=$(eval echo "~$USER_NAME")
 
 add_ppa()
 {
@@ -22,10 +25,9 @@ add_ppa()
 	sudo apt update -y
 }
 
-camera_install()
+install_camera_pkgs()
 {
-	sudo mkdir -p /opt
-	sudo chmod 755 /opt
+	sudo chown -R ubuntu /opt
 	grep -qxF "$XDG_EXPORT" "$USER_HOME/.bashrc" || echo "$XDG_EXPORT" >> "$USER_HOME/.bashrc"
 	sudo bash -c "grep -qxF '${XDG_EXPORT}' /root/.bashrc || echo '${XDG_EXPORT}' >> /root/.bashrc"
 	sudo mkdir -p /var/cache/camera
@@ -33,26 +35,46 @@ camera_install()
 
 	# CAM/AI -- QCOM PPA
 	sudo apt install -y \
-		gstreamer1.0-qcom-sample-apps qcom-sensors-test-apps \
-		gstreamer1.0-tools qcom-fastcv-binaries-dev qcom-video-firmware \
-		weston-autostart libgbm-msm1 qcom-adreno1 qcom-ib2c qcom-camera-server \
-		qcom-camx
+		gstreamer1.0-qcom-sample-apps \
+		gstreamer1.0-tools \
+		libgbm-msm1 \
+		qcom-adreno1 \
+		qcom-camera-server \
+		qcom-camx \
+		qcom-fastcv-binaries-dev \
+		qcom-ib2c \
+		qcom-sensors-test-apps \
+		qcom-video-firmware \
+		weston-autostart \
 
-	# CAM/wiringrp -- RUBIK Pi PPA
+	# Camera -- RUBIK Pi PPA (TODO: to be moved to Canonical PPA)
 	sudo apt install -y \
 		rubikpi3-cameras
 }
 
-rubikpi_software_install()
+install_rubikpi_pkgs()
+{
+	# Wiringrp -- RUBIK Pi PPA
+	sudo apt install -y \
+		wiringrp \
+		wiringrp-python \
+
+}
+
+install_system_pkgs()
 {
 	sudo apt install -y \
-		wiringrp wiringrp-python
+		net-tools \
+		v4l-utils \
+		unzip \
+
 }
 
 # start of the script
 add_ppa
-camera_install
-rubikpi_software_install
+install_camera_pkgs
+install_rubikpi_pkgs
+install_system_pkgs
 
 sudo apt upgrade -y
 
