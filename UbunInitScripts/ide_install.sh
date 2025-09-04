@@ -1,6 +1,6 @@
 #!/bin/bash
 #Enable:
-#  -x : Debugging Trace 
+#  -x : Debugging Trace
 #  -u : Uninitialized variable usage detection
 #  -o pipefail : Return the first error code as the return value of the script
 set -uxo pipefail
@@ -44,7 +44,7 @@ LOG_FILE="ide_initcfg.log"
 STATE_FILE=".install_status.log"
 
 # Root directory where all the Application artifacts are stored.
-# Currently this is configured as /etc; as these directories need 
+# Currently this is configured as /etc; as these directories need
 # to be aligned with what the sample applications do. However, this
 # should be changed to /local/etc.
 APPLICATION_ARTIFACT_DIR="/etc"
@@ -125,24 +125,24 @@ APT_PACKAGES_RPI=(
   "wiringrp-python"
 )
 APT_PACKAGES_RPI_PULSE_AUDIO=(
-    "libsndfile1" "libltdl7" "libspeexdsp1" "qcom-fastrpc1" "rubikpi3-tinyalsa" "rubikpi3-tinycompress" "rubikpi3-qcom-agm" 
-    "rubikpi3-qcom-args" "rubikpi3-qcom-pal" "rubikpi3-qcom-audio-ftm" 
+    "libsndfile1" "libltdl7" "libspeexdsp1" "qcom-fastrpc1" "rubikpi3-tinyalsa" "rubikpi3-tinycompress" "rubikpi3-qcom-agm"
+    "rubikpi3-qcom-args" "rubikpi3-qcom-pal" "rubikpi3-qcom-audio-ftm"
     "rubikpi3-qcom-audioroute" "rubikpi3-qcom-acdbdata" "rubikpi3-qcom-audio-node"
     "rubikpi3-qcom-kvh2xml" "rubikpi3-qcom-pa-bt-audio" "rubikpi3-qcom-sva-capi-uv-wrapper"
-    "rubikpi3-qcom-sva-cnn" "rubikpi3-qcom-sva-listen-sound-model" "rubikpi3-qcom-sva-eai" 
-    "rubikpi3-qcom-pa-pal-voiceui" "rubikpi3-qcom-pa-pal-acd" "rubikpi3-qcom-audio-plugin-headers" 
-    "rubikpi3-qcom-dac-mer-testapp" "rubikpi3-qcom-dac-plugin" "rubikpi3-qcom-mercury-plugin" 
-    "rubikpi3-pulseaudio" "rubikpi3-diag" "rubikpi3-dsp" "rubikpi3-libdmabufheap" 
-    "rubikpi3-qcom-vui-interface" "rubikpi3-qcom-vui-interface-header" "rubikpi3-time-genoff" 
+    "rubikpi3-qcom-sva-cnn" "rubikpi3-qcom-sva-listen-sound-model" "rubikpi3-qcom-sva-eai"
+    "rubikpi3-qcom-pa-pal-voiceui" "rubikpi3-qcom-pa-pal-acd" "rubikpi3-qcom-audio-plugin-headers"
+    "rubikpi3-qcom-dac-mer-testapp" "rubikpi3-qcom-dac-plugin" "rubikpi3-qcom-mercury-plugin"
+    "rubikpi3-pulseaudio" "rubikpi3-diag" "rubikpi3-dsp" "rubikpi3-libdmabufheap"
+    "rubikpi3-qcom-vui-interface" "rubikpi3-qcom-vui-interface-header" "rubikpi3-time-genoff"
     "rubikpi3-pa-pal-plugins"
 )
 
-APT_PACKAGES=("${APT_PACKAGES_CORE[@]}" "${APT_PACKAGES_QCOM[@]}" "${APT_PACKAGES_MULTIMEDIA[@]}" "${APT_PACKAGES_RPI[@]}" 
-#	"${APT_PACKAGES_RPI_PULSE_AUDIO[@]}"  #Exclude the Pulse Audio Packages. This will be replaced by Pipewire
+APT_PACKAGES=("${APT_PACKAGES_CORE[@]}" "${APT_PACKAGES_QCOM[@]}" "${APT_PACKAGES_MULTIMEDIA[@]}" "${APT_PACKAGES_RPI[@]}"
+#    "${APT_PACKAGES_RPI_PULSE_AUDIO[@]}"  #Exclude the Pulse Audio Packages. This will be replaced by Pipewire
 )
 
 # Define Service packages that need to be installed
-# Fot the packages in this category, after the APT 
+# Fot the packages in this category, after the APT
 # install, the systemctl start and systemctl enable
 # will also be done
 APT_SVC_PACKAGES=("avahi-daemon"  )
@@ -164,7 +164,7 @@ mark_status() {
 
 # Function to install ADBD
 install_adbd() {
-  #if is_installed "arm64-adbd"; then 
+  #if is_installed "arm64-adbd"; then
   if true; then
     sudo dpkg -i adbd_5.1.1.r37-11_arm64.deb
     echo "✅ arm64-adbd already installed."
@@ -173,7 +173,7 @@ install_adbd() {
     #Pin: version 5.1.1.r38-1.1
     #Pin-Priority: 1001
     # Add bionic-proposed if not already present
-  
+
     # Replace archive.ubuntu.com with ports.ubuntu.com
     sudo sed -i 's|http://archive.ubuntu.com/ubuntu|http://ports.ubuntu.com/ubuntu-ports|g' /etc/apt/sources.list
 
@@ -376,7 +376,7 @@ else
 
   #And finally, ensure that XDG_RUNTIME_DIR has been created
   XDG_RUNTIME_DIR=/run/user/$USER_ID
-  sudo mkdir -p $XDG_RUNTIME_DIR 
+  sudo mkdir -p $XDG_RUNTIME_DIR
 
   #Mark the status of these configurations
   mark_status "xdg-config" "success"
@@ -386,7 +386,7 @@ fi
 #And, for this shell (where script is executing), set these export variables
 sudo -i export XDG_RUNTIME_DIR=/run/user/$(id -u)
 sudo -i export WAYLAND_DISPLAY=wayland-1
-sudo -i export GBM_BACKEND=msm 
+sudo -i export GBM_BACKEND=msm
 sudo -i export GST_DEBUG=2
 if pgrep -x weston > /dev/null; then
   echo "weston is already running."|tee -a $LOG_FILE
@@ -410,7 +410,7 @@ fi
 if is_installed "user_groups"; then
   echo "User Groups for ${USER_NAME} Already configured"|tee -a $LOG_FILE
 else
-  #Add user to the groups 
+  #Add user to the groups
   sudo usermod -aG audio,pulse,plugdev,video,render "$USER_NAME"
   mark_status "user_groups" "success"
   echo "User Groups for user ${USER_NAME} configured"|tee -a $LOG_FILE

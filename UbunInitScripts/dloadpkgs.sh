@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Download directory 
+# Download directory
 DOWNLOAD_DIR="./qcom-noble-debs"
 mkdir -p "$DOWNLOAD_DIR"
 cd "$DOWNLOAD_DIR"
@@ -9,7 +9,7 @@ cd "$DOWNLOAD_DIR"
 BASE_URL="https://launchpad.net/~ubuntu-qcom-iot/+archive/ubuntu/qcom-noble-ppa/+files"
 
 # List of package filenames
-# This list was provided by various tests run to ensure that EI Model workflows 
+# This list was provided by various tests run to ensure that EI Model workflows
 # can run on Ubuntu builds on RPI-3.
 FILES=(
   "libqnn-dev_2.34.0.250424-0ubuntu1_arm64.deb"
