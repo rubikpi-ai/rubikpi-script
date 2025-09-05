@@ -198,6 +198,13 @@ if [ "$1" != "" ]; then
 	if [ ${do_flat_build_flag} -eq "1" ]; then
 		do_flat_build
 	fi
+
+	if [ ${do_build_all_flag} -eq "0" ] \
+		&& [ ${do_clean_flag} -eq "0" ] \
+		&& [ ${do_flat_build_flag} -eq "0" ]; then
+		echo "Invalid option, -h or --help for help"
+		exit 1
+	fi
 else
 	do_build_all
 fi
