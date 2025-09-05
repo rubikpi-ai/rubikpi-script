@@ -98,6 +98,13 @@ if [ "$1" != "" ]; then
 	if [ "$do_fastboot_reboot_flag" -eq "1" ]; then
 		do_fastboot_reboot
 	fi
+
+	if [ "$do_dtb_flash_flag" -eq "0" ] \
+		&& [ "$do_image_flash_flag" -eq "0" ] \
+		&& [ "$do_fastboot_reboot_flag" -eq "0" ]; then
+		echo "Invalid options, -h or --help for help"
+		exit 1
+	fi
 else
 	do_dtb_flash
 	do_image_flash

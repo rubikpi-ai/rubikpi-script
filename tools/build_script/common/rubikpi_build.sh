@@ -367,6 +367,16 @@ if [ "$1" != "" ]; then
 	if [ ${do_image_package_flag} -eq "1" ]; then
 		do_image_package
 	fi
+
+	if [ "$do_clean_flag" -eq "0" ] \
+		&& [ "$do_merge_config_flag" -eq "0" ] \
+		&& [ "$do_build_all_flag" -eq "0" ] \
+		&& [ "$do_build_dtb_flag" -eq "0" ] \
+		&& [ "$do_dtb_package_flag" -eq "0" ] \
+		&& [ "$do_image_package_flag" -eq "0" ]; then
+		echo "Invalid options, -h or --help for help"
+		exit 1
+	fi
 else
 	do_build_all
 	do_dtb_package
