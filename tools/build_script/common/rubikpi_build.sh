@@ -43,17 +43,17 @@ KERNEL_CONFIG_FRAGMENTS="${CONFIG_FILE_DIR}/qcom_addons.config \
 KERNEL_INCLUDE="${TOP_DIR}/include/"
 
 usage() {
-	echo "\033[1;37mUsage:\033[0m"
+	echo -e "\033[1;37mUsage:\033[0m"
 	echo "  bash $0 [options]"
 	echo
-	echo "\033[1;37mOptions:\033[0m"
-	echo "\033[1;37m  -h, --help\033[0m              display this help message"
-	echo "\033[1;37m  -dp, --dtb_package\033[0m      generate a burnable device tree image"
-	echo "\033[1;37m  -ip, --image_package\033[0m    generate a burnable kernel image"
-	echo "\033[1;37m  -a, --build_all\033[0m         Complete compilation of kernel"
-	echo "\033[1;37m  -d, --build_dts\033[0m         Complete compilation of device tree"
-	echo "\033[1;37m  -gc, --generate_config\033[0m  Generate. config file"
-	echo "\033[1;37m  -c, --clean\033[0m             Clean up workspace"
+	echo -e "\033[1;37mOptions:\033[0m"
+	echo -e "\033[1;37m  -h, --help\033[0m              display this help message"
+	echo -e "\033[1;37m  -dp, --dtb_package\033[0m      generate a burnable device tree image"
+	echo -e "\033[1;37m  -ip, --image_package\033[0m    generate a burnable kernel image"
+	echo -e "\033[1;37m  -a, --build_all\033[0m         Complete compilation of kernel"
+	echo -e "\033[1;37m  -d, --build_dts\033[0m         Complete compilation of device tree"
+	echo -e "\033[1;37m  -gc, --generate_config\033[0m  Generate. config file"
+	echo -e "\033[1;37m  -c, --clean\033[0m             Clean up workspace"
 	echo
 }
 

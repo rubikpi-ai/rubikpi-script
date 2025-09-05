@@ -34,14 +34,14 @@ set -e
 TOP_DIR=`pwd`
 
 usage() {
-	echo "\033[1;37mUsage:\033[0m"
+	echo -e "\033[1;37mUsage:\033[0m"
 	echo "  bash $0 [options]"
 	echo
-	echo "\033[1;37mOptions:\033[0m"
-	echo "\033[1;37m  -h, --help\033[0m     display this help message"
-	echo "\033[1;37m  -r, --reboot\033[0m   exit fastboot mode"
-	echo "\033[1;37m  -d, --dtb\033[0m      flash device tree image"
-	echo "\033[1;37m  -i, --image\033[0m    flash kernel image"
+	echo -e "\033[1;37mOptions:\033[0m"
+	echo -e "\033[1;37m  -h, --help\033[0m     display this help message"
+	echo -e "\033[1;37m  -r, --reboot\033[0m   exit fastboot mode"
+	echo -e "\033[1;37m  -d, --dtb\033[0m      flash device tree image"
+	echo -e "\033[1;37m  -i, --image\033[0m    flash kernel image"
 	echo
 }
 
