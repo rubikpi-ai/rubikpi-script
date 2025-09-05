@@ -1,4 +1,4 @@
-#!/bin/sh -ex
+#!/bin/bash -ex
 
 #Configuration used by the script
 REPO_ENTRY="deb http://apt.rubikpi.ai ppa main"
@@ -34,7 +34,7 @@ install_camera_pkgs()
 	sudo sh -c "echo 'enableNCSService=FALSE' > $CAMERA_SETTINGS"
 
 	# CAM/AI -- QCOM PPA
-	sudo apt install -y \
+	PKG_LIST+=( \
 		gstreamer1.0-qcom-sample-apps \
 		gstreamer1.0-tools \
 		libgbm-msm1 \
@@ -46,28 +46,25 @@ install_camera_pkgs()
 		qcom-sensors-test-apps \
 		qcom-video-firmware \
 		weston-autostart \
-
-	# Camera -- RUBIK Pi PPA (TODO: to be moved to Canonical PPA)
-	sudo apt install -y \
-		rubikpi3-cameras
+	)
 }
 
 install_rubikpi_pkgs()
 {
 	# Wiringrp -- RUBIK Pi PPA
-	sudo apt install -y \
+	PKG_LIST+=( \
 		wiringrp \
 		wiringrp-python \
-
+	)
 }
 
 install_system_pkgs()
 {
-	sudo apt install -y \
+	PKG_LIST+=( \
 		net-tools \
-		v4l-utils \
 		unzip \
-
+		v4l-utils \
+	)
 }
 
 # start of the script
@@ -76,8 +73,11 @@ install_camera_pkgs
 install_rubikpi_pkgs
 install_system_pkgs
 
+sudo apt install -y ${PKG_LIST[@]}
+sudo apt install -y rubikpi3-cameras
 sudo apt upgrade -y
 
 echo "Setup completed. System will reboot in 10 seconds..."
+sync; sync; sync
 sleep 10
 sudo reboot
