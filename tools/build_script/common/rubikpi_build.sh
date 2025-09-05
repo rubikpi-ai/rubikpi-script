@@ -53,7 +53,7 @@ usage() {
 PRODUCT=""
 ProjectName="RUBIKPi"
 HardWareVersion="xx"
-SoftWareVersion="QLI_1.3"
+SoftWareVersion="QLI_1.5"
 Buildtime=`date +%Y%m%d.%H%M%S`
 RUBIKPI_ID="${ProjectName}_${HardWareVersion}_${SoftWareVersion}"
 STORAGE="ufs"
