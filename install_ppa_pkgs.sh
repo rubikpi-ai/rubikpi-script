@@ -25,7 +25,7 @@ add_ppa()
 	sudo apt update -y
 }
 
-install_camera_pkgs()
+install_cam_ai_samples()
 {
 	sudo chown -R ubuntu /opt
 	grep -qxF "$XDG_EXPORT" "$USER_HOME/.bashrc" || echo "$XDG_EXPORT" >> "$USER_HOME/.bashrc"
@@ -49,7 +49,7 @@ install_camera_pkgs()
 	)
 }
 
-install_rubikpi_pkgs()
+add_rubikpi_pkgs()
 {
 	# Wiringrp -- RUBIK Pi PPA
 	PKG_LIST+=( \
@@ -58,7 +58,7 @@ install_rubikpi_pkgs()
 	)
 }
 
-install_system_pkgs()
+add_system_pkgs()
 {
 	PKG_LIST+=( \
 		net-tools \
@@ -69,9 +69,9 @@ install_system_pkgs()
 
 # start of the script
 add_ppa
-install_camera_pkgs
-install_rubikpi_pkgs
-install_system_pkgs
+install_cam_ai_samples
+add_rubikpi_pkgs
+add_system_pkgs
 
 sudo apt install -y ${PKG_LIST[@]}
 sudo apt install -y rubikpi3-cameras
