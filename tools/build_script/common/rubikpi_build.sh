@@ -38,16 +38,16 @@ assert() {
 }
 
 usage() {
-	echo "\033[1;37mUsage:\033[0m"
-	echo "  bash $0 [options]"
-	echo
-	echo "\033[1;37mOptions:\033[0m"
-	echo "\033[1;37m  -h, --help\033[0m              display this help message"
-	echo "\033[1;37m  -a, --build_all\033[0m         Compile Yocto project"
-	echo "\033[1;37m  -l, --log\033[0m               Save the logs to file"
-	echo "\033[1;37m  -c, --clean\033[0m             Clean up workspace"
-	echo "\033[1;37m  -p, --zip_flat_build\033[0m    Package the flat build"
-	echo
+    echo -e "\033[1;37mUsage:\033[0m"
+    echo "  bash $0 [options]"
+    echo
+    echo -e "\033[1;37mOptions:\033[0m"
+    echo -e "\033[1;37m  -h, --help\033[0m              display this help message"
+    echo -e "\033[1;37m  -a, --build_all\033[0m         Compile Yocto project"
+    echo -e "\033[1;37m  -l, --log\033[0m               Save the logs to file"
+    echo -e "\033[1;37m  -c, --clean\033[0m             Clean up workspace"
+    echo -e "\033[1;37m  -p, --zip_flat_build\033[0m    Package the flat build"
+    echo
 }
 
 PRODUCT=""
