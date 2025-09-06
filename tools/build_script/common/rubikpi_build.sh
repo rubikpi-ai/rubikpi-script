@@ -143,6 +143,7 @@ copy_files() {
 }
 
 BIN_FILELIST=($meta_dir/build-qcom-wayland/tmp-glibc/deploy/images/qcm6490-idp/qcom-multimedia-image/*)
+PROVISION_FILELIST=($meta_dir/rubikpi/tools/build_script/provision/*)
 RUBIKPIOUT=${meta_dir}/rubikpi/output
 FLATDIRNAME=FlatBuild_$RUBIKPI_ID.${Buildtime}
 
@@ -156,6 +157,7 @@ zip_package() {
 
 do_flat_build() {
 	copy_files "${BIN_FILELIST[*]}" $RUBIKPIOUT/$FLATDIRNAME/$STORAGE
+	copy_files "${PROVISION_FILELIST[*]}" $RUBIKPIOUT/$FLATDIRNAME/provision
 	zip_package
 }
 
