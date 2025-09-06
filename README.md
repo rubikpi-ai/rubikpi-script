@@ -13,8 +13,22 @@ git clone -b linux_distro_dev --single-branch https://github.com/rubikpi-ai/rubi
 cd rubikpi-script
 ```
 
-### Run all scripts in sequence:
+### Run scripts:
 
 ```bash
 ./install_ppa_pkgs.sh
+```
+
+More complicated usage can be found by -h or --help:
+```bash
+./install_ppa_pkgs.sh --help
+```
+
+### Get script version when report issues:
+
+Inform us the script version from git describe command below when you report issues.
+
+```bash
+cd rubikpi-script
+git describe --always
 ```
