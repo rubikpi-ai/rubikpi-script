@@ -1,4 +1,4 @@
-# initial.sh
+# install_ppa_pkgs.sh
 
 Helps you quickly enable RUBIK Pi's peripheral functions. (CAM, AI, Audio, etc.)
 
