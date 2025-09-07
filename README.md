@@ -1,4 +1,4 @@
-# install_ppa_pkgs.sh
+# README
 
 Helps you quickly enable RUBIK Pi's peripheral functions. (CAM, AI, Audio, etc.)
 
@@ -34,6 +34,10 @@ More complicated usage can be found by -h or --help:
 
 ### Speed up by using region mirrors for ubuntu-ports:
 
+Just pick one mirror below based on your region, if default ubuntu-ports is slow.
+Mirror setting will be saved to the source list below:
+* /etc/apt/sources.list.d/ports-mirror.sources
+
 For APAC
 ```bash
 ./install_ppa_pkgs.sh --mirror=https://ftp.tsukuba.wide.ad.jp/Linux/ubuntu-ports      # Japan mirror
@@ -57,7 +61,7 @@ For North America
 ./install_ppa_pkgs.sh --mirror=https://mirrors.ocf.berkeley.edu/ubuntu-ports          # US/West mirror
 ```
 
-### Get script version when report issues:
+## Get script version when report issues:
 
 Inform us the script version from git describe command below when you report issues.
 

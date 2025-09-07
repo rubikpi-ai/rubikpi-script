@@ -11,7 +11,8 @@ fi
 REPO_ENTRY="deb http://apt.rubikpi.ai ppa main"
 HOST_ENTRY="151.106.120.85 apt.rubikpi.ai"
 XDG_EXPORT="export XDG_RUNTIME_DIR=/run/user/\$(id -u)"
-CAMERA_SETTINGS="/var/cache/camera/camxoverridesettings.txt"
+CAMERA_SETTINGS=/var/cache/camera/camxoverridesettings.txt
+PORTS_MIRROR=/etc/apt/sources.list.d/ports-mirror.sources
 
 # Common user and home dir for the ubuntu
 USER_NAME=ubuntu
@@ -78,8 +79,15 @@ remove_ppa()
 
 update_mirror()
 {
-	[ -f /etc/apt/sources.list.d/ubuntu.sources ] &&
-		sudo sed -i "s!URIs:.*!URIs: $1!" /etc/apt/sources.list.d/ubuntu.sources
+	cat > ports.sources << EOL
+Types: deb
+URIs: $1
+Suites: noble noble-updates noble-backports noble-security
+Components: main universe restricted multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+EOL
+	sudo mv ports.sources $PORTS_MIRROR
+	sudo chown root:root $PORTS_MIRROR
 }
 
 install_cam_ai_samples()
@@ -144,11 +152,10 @@ install()
 uninstall()
 {
 	set_hostname ubuntu
-	sudo rm -f $CAMERA_SETTINGS
+	sudo rm -f $CAMERA_SETTINGS $PORTS_MIRROR
 	sed -i '/export XDG_RUNTIME_DIR=/d' $USER_HOME/.bashrc
 	sudo sed -i '/export XDG_RUNTIME_DIR=/d' /root/.bashrc
 	remove_ppa
-	update_mirror http://ports.ubuntu.com/ubuntu-ports
 	sudo apt update
 	sudo apt purge -y ${PKG_LIST[@]} rubikpi3-cameras
 	sudo apt autoremove --purge -y
