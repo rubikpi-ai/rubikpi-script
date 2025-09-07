@@ -29,6 +29,7 @@ usage() {
 	printf "\033[1;37mOptions:\033[0m\n"
 	printf "\033[1;37m  -h, --help\033[0m              Display this help message\n"
 	printf "\033[1;37m  --hostname=<name>\033[0m       Set system hostname to specified name\n"
+	printf "\033[1;37m  --mirror=<URI>\033[0m          Update the ubuntu-ports mirror\n"
 	printf "\033[1;37m  --reboot\033[0m                Reboot at the end of the process\n"
 	printf "\033[1;37m  --uninstall\033[0m             Uninstall everything related to this script\n"
 	printf "\n"
@@ -39,6 +40,18 @@ usage() {
 	printf "  %s --reboot --hostname=mypi # Install all pkgs, set hostname, and reboot\n" "$0"
 	printf "  %s --uninstall --reboot     # Uninstall all pkgs, and reboot\n" "$0"
 	printf "\n"
+	printf "\033[1;37mRegion mirrors for ubuntu-ports:\033[0m\n"
+	printf "  %s --mirror=https://ftp.tsukuba.wide.ad.jp/Linux/ubuntu-ports\t# Japan mirror\n" "$0"
+	printf "  %s --mirror=https://in.mirror.coganng.com/ubuntu-ports\t\t# India mirror\n" "$0"
+	printf "  %s --mirror=https://mirror.csclub.uwaterloo.ca/ubuntu-ports\t# Canada mirror\n" "$0"
+	printf "  %s --mirror=https://mirror.dogado.de/ubuntu-ports\t\t\t# Germany mirror\n" "$0"
+	printf "  %s --mirror=https://mirror.hashy0917.net/ubuntu-ports\t\t# Japan mirror\n" "$0"
+	printf "  %s --mirror=https://mirror.kumi.systems/ubuntu-ports\t\t# Austria mirror\n" "$0"
+	printf "  %s --mirror=https://mirror.twds.com.tw/ubuntu-ports\t\t# Taiwan mirror\n" "$0"
+	printf "  %s --mirror=https://mirrors.mit.edu/ubuntu-ports\t\t\t# US/East mirror\n" "$0"
+	printf "  %s --mirror=https://mirrors.ocf.berkeley.edu/ubuntu-ports\t\t# US/West mirror\n" "$0"
+	printf "  %s --mirror=https://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports\t# China mirror\n" "$0"
+	printf "  %s --mirror=https://mirrors.ustc.edu.cn/ubuntu-ports\t\t# China mirror\n" "$0"
 }
 
 add_ppa()
@@ -61,6 +74,12 @@ remove_ppa()
 	sudo sed -i '/apt.rubikpi.ai ppa main/d' /etc/apt/sources.list
 	sudo sed -i "/$HOST_ENTRY/d" /etc/hosts
 	sudo rm -f /etc/apt/trusted.gpg.d/rubikpi3.asc
+}
+
+update_mirror()
+{
+	[ -f /etc/apt/sources.list.d/ubuntu.sources ] &&
+		sudo sed -i "s!URIs:.*!URIs: $1!" /etc/apt/sources.list.d/ubuntu.sources
 }
 
 install_cam_ai_samples()
@@ -129,6 +148,7 @@ uninstall()
 	sed -i '/export XDG_RUNTIME_DIR=/d' $USER_HOME/.bashrc
 	sudo sed -i '/export XDG_RUNTIME_DIR=/d' /root/.bashrc
 	remove_ppa
+	update_mirror http://ports.ubuntu.com/ubuntu-ports
 	sudo apt update
 	sudo apt purge -y ${PKG_LIST[@]} rubikpi3-cameras
 	sudo apt autoremove --purge -y
@@ -173,6 +193,14 @@ main() {
 					exit 1
 				fi
 				set_hostname $hostname
+				;;
+			--mirror=*)
+				mirror="${1#*=}"
+				if [ -z "$mirror" ]; then
+					echo "Error: mirror cannot be empty"
+					exit 1
+				fi
+				update_mirror $mirror
 				;;
 			--reboot)
 				reboot=1
