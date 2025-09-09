@@ -26,9 +26,11 @@ More complicated usage can be found by -h or --help:
 
 ### More Examples:
 ```bash
-./install_ppa_pkgs.sh --hostname=mypi          # Install all pkgs, and set hostname
-./install_ppa_pkgs.sh --reboot                 # Install all pkgs, and reboot
-./install_ppa_pkgs.sh --reboot --hostname=mypi # Install all pkgs, set hostname, and reboot
+./install_ppa_pkgs.sh                          # Install IM SDK pkgs
+./install_ppa_pkgs.sh --ide                    # Install IM SDK & IDE pkgs, and IDE related settings
+./install_ppa_pkgs.sh --hostname=mypi          # Install IM SDK pkgs, and set hostname
+./install_ppa_pkgs.sh --reboot                 # Install IM SDK pkgs, and reboot
+./install_ppa_pkgs.sh --reboot --hostname=mypi # Install IM SDK pkgs, set hostname, and reboot
 ./install_ppa_pkgs.sh --uninstall --reboot     # Uninstall all pkgs, and reboot
 ```
 

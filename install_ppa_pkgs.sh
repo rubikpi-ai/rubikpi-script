@@ -7,16 +7,23 @@ if [ $# -ne 1 ] || [ $# -gt 0 -a "$1" != "-h" -a "$1" != "--help" ]; then
 	set -x
 fi
 
-#Configuration used by the script
+# Configuration used by the script
 REPO_ENTRY="deb http://apt.rubikpi.ai ppa main"
 HOST_ENTRY="151.106.120.85 apt.rubikpi.ai"
 XDG_EXPORT="export XDG_RUNTIME_DIR=/run/user/\$(id -u)"
+WAYLAND_EXPORT="export WAYLAND_DISPLAY=wayland-1"
+GBM_EXPORT="export GBM_BACKEND=msm"
+GST_DBG_EXPORT="export GST_DEBUG=2"
 CAMERA_SETTINGS=/var/cache/camera/camxoverridesettings.txt
 PORTS_MIRROR=/etc/apt/sources.list.d/ports-mirror.sources
 
 # Common user and home dir for the ubuntu
 USER_NAME=ubuntu
 USER_HOME=$(eval echo "~$USER_NAME")
+#
+# Suppress interactive prompts and auto-restart services
+export DEBIAN_FRONTEND=noninteractive
+export NEEDRESTART_MODE=a
 
 # Usage function with colored output
 usage() {
@@ -35,10 +42,11 @@ usage() {
 	printf "\033[1;37m  --uninstall\033[0m             Uninstall everything related to this script\n"
 	printf "\n"
 	printf "\033[1;37mExamples:\033[0m\n"
-	printf "  %s                          # Install all pkgs\n" "$0"
-	printf "  %s --hostname=mypi          # Install all pkgs, and set hostname\n" "$0"
-	printf "  %s --reboot                 # Install all pkgs, and reboot\n" "$0"
-	printf "  %s --reboot --hostname=mypi # Install all pkgs, set hostname, and reboot\n" "$0"
+	printf "  %s                          # Install IM SDK pkgs\n" "$0"
+	printf "  %s --ide                    # Install IM SDK & IDE pkgs, and IDE related settings\n" "$0"
+	printf "  %s --hostname=mypi          # Install IM SDK pkgs, and set hostname\n" "$0"
+	printf "  %s --reboot                 # Install IM SDK pkgs, and reboot\n" "$0"
+	printf "  %s --reboot --hostname=mypi # Install IM SDK pkgs, set hostname, and reboot\n" "$0"
 	printf "  %s --uninstall --reboot     # Uninstall all pkgs, and reboot\n" "$0"
 	printf "\n"
 	printf "\033[1;37mRegion mirrors for ubuntu-ports:\033[0m\n"
@@ -100,24 +108,48 @@ install_cam_ai_samples()
 	add_cam_ai_pkgs
 }
 
+setup_ide()
+{
+	grep -qxF "$WAYLAND_EXPORT" $USER_HOME/.bashrc || echo "$WAYLAND_EXPORT" >> $USER_HOME/.bashrc
+	sudo bash -c "grep -qxF '${WAYLAND_EXPORT}' /root/.bashrc || echo '${WAYLAND_EXPORT}' >> /root/.bashrc"
+	grep -qxF "$GBM_EXPORT" $USER_HOME/.bashrc || echo "$GBM_EXPORT" >> $USER_HOME/.bashrc
+	sudo bash -c "grep -qxF '${GBM_EXPORT}' /root/.bashrc || echo '${GBM_EXPORT}' >> /root/.bashrc"
+	grep -qxF "$GST_DBG_EXPORT" $USER_HOME/.bashrc || echo "$GST_DBG_EXPORT" >> $USER_HOME/.bashrc
+	sudo bash -c "grep -qxF '${GST_DBG_EXPORT}' /root/.bashrc || echo '${GST_DBG_EXPORT}' >> /root/.bashrc"
+	add_ide_pkgs
+}
+
 add_cam_ai_pkgs()
 {
 	# CAM/AI -- QCOM PPA
 	PKG_LIST+=(
-		gstreamer1.0-qcom-python-examples
 		gstreamer1.0-qcom-sample-apps
 		gstreamer1.0-tools
-		libqnn-dev
-		libsnpe-dev
 		qcom-adreno1
 		qcom-fastcv-binaries-dev
-		qcom-libdmabufheap-dev
 		qcom-sensors-test-apps
 		qcom-video-firmware
+		weston-autostart
+	)
+}
+
+add_ide_pkgs()
+{
+	PKG_LIST+=(
+		avahi-daemon
+		ffmpeg
+		gdbserver
+		gstreamer1.0-qcom-python-examples
+		libqnn-dev
+		libsnpe-dev
+		python3-debugpy
+		python3-pip
+		qcom-libdmabufheap-dev
 		qnn-tools
+		selinux-utils
 		snpe-tools
 		tensorflow-lite-qcom-apps
-		weston-autostart
+		v4l-utils
 	)
 }
 
@@ -133,12 +165,8 @@ add_rubikpi_pkgs()
 add_system_pkgs()
 {
 	PKG_LIST+=(
-		ffmpeg
 		net-tools
-		python3-pip
-		selinux-utils
 		unzip
-		v4l-utils
 	)
 }
 
@@ -155,6 +183,12 @@ uninstall()
 	sudo rm -f $CAMERA_SETTINGS $PORTS_MIRROR
 	sed -i '/export XDG_RUNTIME_DIR=/d' $USER_HOME/.bashrc
 	sudo sed -i '/export XDG_RUNTIME_DIR=/d' /root/.bashrc
+	sed -i '/export WAYLAND_EXPORT=/d' $USER_HOME/.bashrc
+	sudo sed -i '/export WAYLAND_EXPORT=/d' /root/.bashrc
+	sed -i '/export GBM_EXPORT=/d' $USER_HOME/.bashrc
+	sudo sed -i '/export GBM_EXPORT=/d' /root/.bashrc
+	sed -i '/export GST_DBG_EXPORT=/d' $USER_HOME/.bashrc
+	sudo sed -i '/export GST_DBG_EXPORT=/d' /root/.bashrc
 	remove_ppa
 	sudo apt update
 	sudo apt purge -y ${PKG_LIST[@]} rubikpi3-cameras
@@ -183,8 +217,9 @@ main() {
 	echo "======================="
 
 	local hostname=RUBIKPi3
-	local uninstall=0
+	local ide=0
 	local reboot=0
+	local uninstall=0
 
 	# Parse arguments and execute accordingly
 	while [ "$#" -gt 0 ]; do
@@ -200,6 +235,9 @@ main() {
 					exit 1
 				fi
 				set_hostname $hostname
+				;;
+			--ide)
+				ide=1
 				;;
 			--mirror=*)
 				mirror="${1#*=}"
@@ -226,12 +264,14 @@ main() {
 
 	if [ $uninstall -eq 1 ]; then
 		add_cam_ai_pkgs
+		add_ide_pkgs
 		add_rubikpi_pkgs
 		add_system_pkgs
 		uninstall
 	else
 		add_ppa
 		install_cam_ai_samples
+		[ $ide -eq 1 ] && setup_ide
 		add_rubikpi_pkgs
 		add_system_pkgs
 		install
