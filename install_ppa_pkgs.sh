@@ -8,8 +8,8 @@ if [ $# -ne 1 ] || [ $# -gt 0 -a "$1" != "-h" -a "$1" != "--help" ]; then
 fi
 
 # Configuration used by the script
-REPO_ENTRY="deb http://apt.rubikpi.ai ppa main"
-HOST_ENTRY="151.106.120.85 apt.rubikpi.ai"
+REPO_ENTRY="deb http://apt.thundercomm.com/rubik-pi-3/noble ppa main"
+HOST_ENTRY="151.106.120.85 apt.rubikpi.ai"	# TODO: Remove legacy
 XDG_EXPORT="export XDG_RUNTIME_DIR=/run/user/\$(id -u)"
 WAYLAND_EXPORT="export WAYLAND_DISPLAY=wayland-1"
 GBM_EXPORT="export GBM_BACKEND=msm"
@@ -65,14 +65,15 @@ usage() {
 
 add_ppa()
 {
+	# TODO: Remove legacy
+	sudo sed -i "/$HOST_ENTRY/d" /etc/hosts || true
+	sudo sed -i '/apt.rubikpi.ai ppa main/d' /etc/apt/sources.list || true
+
 	if ! grep -q "^[^#]*$REPO_ENTRY" /etc/apt/sources.list; then
 		echo "$REPO_ENTRY" | sudo tee -a /etc/apt/sources.list >/dev/null
 	fi
-	if ! grep -q "$HOST_ENTRY" /etc/hosts; then
-		echo "$HOST_ENTRY" | sudo tee -a /etc/hosts >/dev/null
-	fi
 
-	# Add the GPG key for the apt.rubikpi.ai PPA
+	# Add the GPG key for the RUBIK Pi PPA
 	wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads/web/rubik-pi-3/tools/key.asc | sudo tee /etc/apt/trusted.gpg.d/rubikpi3.asc
 
 	sudo apt update
@@ -80,8 +81,11 @@ add_ppa()
 
 remove_ppa()
 {
-	sudo sed -i '/apt.rubikpi.ai ppa main/d' /etc/apt/sources.list
-	sudo sed -i "/$HOST_ENTRY/d" /etc/hosts
+	# TODO: Remove legacy
+	sudo sed -i "/$HOST_ENTRY/d" /etc/hosts || true
+	sudo sed -i '/apt.rubikpi.ai ppa main/d' /etc/apt/sources.list || true
+
+	sudo sed -i '/apt.thundercomm.com/d' /etc/apt/sources.list
 	sudo rm -f /etc/apt/trusted.gpg.d/rubikpi3.asc
 }
 
