@@ -103,42 +103,42 @@ install_cam_ai_samples()
 add_cam_ai_pkgs()
 {
 	# CAM/AI -- QCOM PPA
-	PKG_LIST+=( \
-		gstreamer1.0-qcom-python-examples \
-		gstreamer1.0-qcom-sample-apps \
-		gstreamer1.0-tools \
-		libqnn-dev \
-		libsnpe-dev \
-		qcom-adreno1 \
-		qcom-fastcv-binaries-dev \
-		qcom-libdmabufheap-dev \
-		qcom-sensors-test-apps \
-		qcom-video-firmware \
-		qnn-tools \
-		snpe-tools \
-		tensorflow-lite-qcom-apps \
-		weston-autostart \
+	PKG_LIST+=(
+		gstreamer1.0-qcom-python-examples
+		gstreamer1.0-qcom-sample-apps
+		gstreamer1.0-tools
+		libqnn-dev
+		libsnpe-dev
+		qcom-adreno1
+		qcom-fastcv-binaries-dev
+		qcom-libdmabufheap-dev
+		qcom-sensors-test-apps
+		qcom-video-firmware
+		qnn-tools
+		snpe-tools
+		tensorflow-lite-qcom-apps
+		weston-autostart
 	)
 }
 
 add_rubikpi_pkgs()
 {
 	# Wiringrp -- RUBIK Pi PPA
-	PKG_LIST+=( \
-		wiringrp \
-		wiringrp-python \
+	PKG_LIST+=(
+		wiringrp
+		wiringrp-python
 	)
 }
 
 add_system_pkgs()
 {
-	PKG_LIST+=( \
-		ffmpeg \
-		net-tools \
-		python3-pip \
-		selinux-utils \
-		unzip \
-		v4l-utils \
+	PKG_LIST+=(
+		ffmpeg
+		net-tools
+		python3-pip
+		selinux-utils
+		unzip
+		v4l-utils
 	)
 }
 
