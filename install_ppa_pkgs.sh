@@ -62,17 +62,12 @@ usage() {
 	printf "\n"
 	printf "\033[1;37mOptions:\033[0m\n"
 	printf "\033[1;37m  -h, --help\033[0m              Display this help message\n"
-	printf "\033[1;37m  --hostname=<name>\033[0m       Set system hostname to specified name\n"
 	printf "\033[1;37m  --mirror=<URI>\033[0m          Update the ubuntu-ports mirror\n"
 	printf "\033[1;37m  --reboot\033[0m                Reboot at the end of the process\n"
-	printf "\033[1;37m  --uninstall\033[0m             Uninstall everything related to this script\n"
 	printf "\n"
 	printf "\033[1;37mExamples:\033[0m\n"
 	printf "  %s                          # Install all pkgs\n" "$0"
-	printf "  %s --hostname=mypi          # Install all pkgs, and set hostname\n" "$0"
 	printf "  %s --reboot                 # Install all pkgs, and reboot\n" "$0"
-	printf "  %s --reboot --hostname=mypi # Install all pkgs, set hostname, and reboot\n" "$0"
-	printf "  %s --uninstall --reboot     # Uninstall all pkgs, and reboot\n" "$0"
 	printf "\n"
 	printf "\033[1;37mRegion mirrors for ubuntu-ports:\033[0m\n"
 	printf "  %s --mirror=https://ftp.tsukuba.wide.ad.jp/Linux/ubuntu-ports\t# Japan mirror\n" "$0"
@@ -102,16 +97,6 @@ add_ppa()
 	wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads/web/rubik-pi-3/tools/key.asc | sudo tee /etc/apt/trusted.gpg.d/rubikpi3.asc
 
 	sudo apt update
-}
-
-remove_ppa()
-{
-	# TODO: Remove legacy
-	sudo sed -i "/$HOST_ENTRY/d" /etc/hosts || true
-	sudo sed -i '/apt.rubikpi.ai ppa main/d' /etc/apt/sources.list || true
-
-	sudo sed -i '/apt.thundercomm.com/d' /etc/apt/sources.list
-	sudo rm -f /etc/apt/trusted.gpg.d/rubikpi3.asc
 }
 
 update_mirror()
@@ -186,24 +171,6 @@ install()
 	sudo apt upgrade -y
 }
 
-uninstall()
-{
-	set_hostname ubuntu
-	sudo rm -f $CAMERA_SETTINGS $PORTS_MIRROR
-	sed -i '/export XDG_RUNTIME_DIR=/d' $USER_HOME/.bashrc
-	sudo sed -i '/export XDG_RUNTIME_DIR=/d' /root/.bashrc
-	remove_ppa
-	sudo apt update
-	sudo apt purge -y ${PKG_LIST[@]} rubikpi3-cameras
-	sudo apt autoremove --purge -y
-}
-
-set_hostname()
-{
-	sudo hostnamectl set-hostname $1 2>&1 > /dev/null
-	sudo sed -i "s/^127\.0\.0\.1\s\+.*/127.0.0.1 localhost $1/" /etc/hosts 2>&1 > /dev/null
-}
-
 finalize()
 {
 	sync; sync; sync
@@ -219,8 +186,6 @@ main() {
 	echo "RUBIK Pi 3 Setup Script"
 	echo "======================="
 
-	local hostname=RUBIKPi3
-	local uninstall=0
 	local reboot=0
 
 	# Parse arguments and execute accordingly
@@ -229,14 +194,6 @@ main() {
 			-h|--help)
 				usage
 				exit 0
-				;;
-			--hostname=*)
-				hostname="${1#*=}"
-				if [ -z "$hostname" ]; then
-					echo "Error: hostname cannot be empty"
-					exit 1
-				fi
-				set_hostname $hostname
 				;;
 			--mirror=*)
 				mirror="${1#*=}"
@@ -249,9 +206,6 @@ main() {
 			--reboot)
 				reboot=1
 				;;
-			--uninstall)
-				uninstall=1
-				;;
 			*)
 				echo "Unknown option: $1"
 				echo "Use --help for usage information"
@@ -261,19 +215,11 @@ main() {
 		shift
 	done
 
-	if [ $uninstall -eq 1 ]; then
-		add_cam_ai_pkgs
-		add_rubikpi_pkgs
-		add_system_pkgs
-		uninstall
-	else
-		add_ppa
-		install_cam_ai_samples
-		add_rubikpi_pkgs
-		add_system_pkgs
-		install
-	fi
-
+	add_ppa
+	install_cam_ai_samples
+	add_rubikpi_pkgs
+	add_system_pkgs
+	install
 	finalize
 	echo "Script completed successfully!"
 }

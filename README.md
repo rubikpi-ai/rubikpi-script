@@ -26,10 +26,7 @@ More complicated usage can be found by -h or --help:
 
 ### More Examples:
 ```bash
-./install_ppa_pkgs.sh --hostname=mypi          # Install all pkgs, and set hostname
 ./install_ppa_pkgs.sh --reboot                 # Install all pkgs, and reboot
-./install_ppa_pkgs.sh --reboot --hostname=mypi # Install all pkgs, set hostname, and reboot
-./install_ppa_pkgs.sh --uninstall --reboot     # Uninstall all pkgs, and reboot
 ```
 
 ### Speed up by using region mirrors for ubuntu-ports:
