@@ -69,15 +69,18 @@ usage() {
 	printf "\n"
 	printf "\033[1;37mOptions:\033[0m\n"
 	printf "\033[1;37m  -h, --help\033[0m              Display this help message\n"
+	printf "\033[1;37m  --ei, --edgeimpulse\033[0m     Install Edge Impulse related pkgs"
 	printf "\033[1;37m  --hostname=<name>\033[0m       Set system hostname to specified name\n"
+	printf "\033[1;37m  --ide\033[0m                   Install IDE related pkgs"
 	printf "\033[1;37m  --mirror=<URI>\033[0m          Update the ubuntu-ports mirror\n"
 	printf "\033[1;37m  --reboot\033[0m                Reboot at the end of the process\n"
 	printf "\033[1;37m  --uninstall\033[0m             Uninstall everything related to this script\n"
 	printf "\n"
 	printf "\033[1;37mExamples:\033[0m\n"
 	printf "  %s                          # Install IM SDK pkgs\n" "$0"
-	printf "  %s --ide                    # Install IM SDK & IDE pkgs, and IDE related settings\n" "$0"
+	printf "  %s --edgeimpulse            # Install IM SDK & Edge Impulse related pkgs\n" "$0"
 	printf "  %s --hostname=mypi          # Install IM SDK pkgs, and set hostname\n" "$0"
+	printf "  %s --ide                    # Install IM SDK & IDE pkgs, and IDE related settings\n" "$0"
 	printf "  %s --reboot                 # Install IM SDK pkgs, and reboot\n" "$0"
 	printf "  %s --reboot --hostname=mypi # Install IM SDK pkgs, set hostname, and reboot\n" "$0"
 	printf "  %s --uninstall --reboot     # Uninstall all pkgs, and reboot\n" "$0"
@@ -124,14 +127,14 @@ remove_ppa()
 
 update_mirror()
 {
-	cat > ports.sources << EOL
+	cat > /tmp/ports.sources << EOL
 Types: deb
 URIs: $1
 Suites: noble noble-updates noble-backports noble-security
 Components: main universe restricted multiverse
 Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
 EOL
-	sudo mv ports.sources $PORTS_MIRROR
+	sudo mv /tmp/ports.sources $PORTS_MIRROR
 	sudo chown root:root $PORTS_MIRROR
 }
 
@@ -160,13 +163,27 @@ add_cam_ai_pkgs()
 {
 	# CAM/AI -- QCOM PPA
 	PKG_LIST+=(
+		gstreamer1.0-qcom-python-examples
 		gstreamer1.0-qcom-sample-apps
 		gstreamer1.0-tools
 		qcom-adreno1
 		qcom-fastcv-binaries-dev
 		qcom-sensors-test-apps
 		qcom-video-firmware
+		tensorflow-lite-qcom-apps
 		weston-autostart
+	)
+}
+
+add_edgeimpulse_pkgs()
+{
+	PKG_LIST+=(
+		libqnn-dev
+		libsnpe-dev
+		qcom-libdmabufheap-dev
+		qnn-tools
+		selinux-utils
+		snpe-tools
 	)
 }
 
@@ -176,16 +193,8 @@ add_ide_pkgs()
 		avahi-daemon
 		ffmpeg
 		gdbserver
-		gstreamer1.0-qcom-python-examples
-		libqnn-dev
-		libsnpe-dev
 		python3-debugpy
 		python3-pip
-		qcom-libdmabufheap-dev
-		qnn-tools
-		selinux-utils
-		snpe-tools
-		tensorflow-lite-qcom-apps
 		v4l-utils
 	)
 }
@@ -254,6 +263,7 @@ main() {
 	echo "======================="
 
 	local hostname=RUBIKPi3
+	local edgeimpulse=0
 	local ide=0
 	local reboot=0
 	local uninstall=0
@@ -271,7 +281,9 @@ main() {
 					echo "Error: hostname cannot be empty"
 					exit 1
 				fi
-				set_hostname $hostname
+				;;
+			--ei|--edgeimpulse)
+				edgeimpulse=1
 				;;
 			--ide)
 				ide=1
@@ -301,13 +313,16 @@ main() {
 
 	if [ $uninstall -eq 1 ]; then
 		add_cam_ai_pkgs
+		add_edgeimpulse_pkgs
 		add_ide_pkgs
 		add_rubikpi_pkgs
 		add_system_pkgs
 		uninstall
 	else
+		set_hostname $hostname
 		add_ppa
 		install_cam_ai_samples
+		[ $edgeimpulse -eq 1 ] && add_edgeimpulse_pkgs
 		[ $ide -eq 1 ] && setup_ide
 		add_rubikpi_pkgs
 		add_system_pkgs
