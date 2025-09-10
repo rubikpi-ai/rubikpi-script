@@ -49,6 +49,9 @@ GBM_EXPORT="export GBM_BACKEND=msm"
 GST_DBG_EXPORT="export GST_DEBUG=2"
 CAMERA_SETTINGS=/var/cache/camera/camxoverridesettings.txt
 PORTS_MIRROR=/etc/apt/sources.list.d/ports-mirror.sources
+VERSION=0.1
+[ -d $(dirname $(realpath $0))/.git ] &&
+	VERSION+=+$(git -C $(dirname $(realpath $0)) describe --always)
 
 # Common user and home dir for the ubuntu
 USER_NAME=ubuntu
@@ -251,6 +254,7 @@ finalize()
 # Main execution logic
 main() {
 	echo "RUBIK Pi 3 Setup Script"
+	echo "  Version $VERSION"
 	echo "======================="
 
 	local hostname=RUBIKPi3
