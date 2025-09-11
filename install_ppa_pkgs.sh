@@ -138,6 +138,7 @@ add_system_pkgs()
 install()
 {
 	sudo apt install -y ${PKG_LIST[@]}
+	sudo ln -sf libOpenCL.so.1 /usr/lib/aarch64-linux-gnu/libOpenCL.so # Fix for snpe-tools
 	sudo apt install -y rubikpi3-cameras
 	sudo apt upgrade -y
 }
