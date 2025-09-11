@@ -65,25 +65,6 @@ usage() {
 	printf "\n"
 	printf "\033[1;37mOptions:\033[0m\n"
 	printf "\033[1;37m  -h, --help\033[0m              Display this help message\n"
-	printf "\033[1;37m  --mirror=<URI>\033[0m          Update the ubuntu-ports mirror\n"
-	printf "\033[1;37m  --reboot\033[0m                Reboot at the end of the process\n"
-	printf "\n"
-	printf "\033[1;37mExamples:\033[0m\n"
-	printf "  %s                          # Install all pkgs\n" "$0"
-	printf "  %s --reboot                 # Install all pkgs, and reboot\n" "$0"
-	printf "\n"
-	printf "\033[1;37mRegion mirrors for ubuntu-ports:\033[0m\n"
-	printf "  %s --mirror=https://ftp.tsukuba.wide.ad.jp/Linux/ubuntu-ports\t# Japan mirror\n" "$0"
-	printf "  %s --mirror=https://in.mirror.coganng.com/ubuntu-ports\t\t# India mirror\n" "$0"
-	printf "  %s --mirror=https://mirror.csclub.uwaterloo.ca/ubuntu-ports\t# Canada mirror\n" "$0"
-	printf "  %s --mirror=https://mirror.dogado.de/ubuntu-ports\t\t\t# Germany mirror\n" "$0"
-	printf "  %s --mirror=https://mirror.hashy0917.net/ubuntu-ports\t\t# Japan mirror\n" "$0"
-	printf "  %s --mirror=https://mirror.kumi.systems/ubuntu-ports\t\t# Austria mirror\n" "$0"
-	printf "  %s --mirror=https://mirror.twds.com.tw/ubuntu-ports\t\t# Taiwan mirror\n" "$0"
-	printf "  %s --mirror=https://mirrors.mit.edu/ubuntu-ports\t\t\t# US/East mirror\n" "$0"
-	printf "  %s --mirror=https://mirrors.ocf.berkeley.edu/ubuntu-ports\t\t# US/West mirror\n" "$0"
-	printf "  %s --mirror=https://mirrors.tuna.tsinghua.edu.cn/ubuntu-ports\t# China mirror\n" "$0"
-	printf "  %s --mirror=https://mirrors.ustc.edu.cn/ubuntu-ports\t\t# China mirror\n" "$0"
 }
 
 add_ppa()
@@ -100,19 +81,6 @@ add_ppa()
 	wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads/web/rubik-pi-3/tools/key.asc | sudo tee /etc/apt/trusted.gpg.d/rubikpi3.asc
 
 	sudo apt update
-}
-
-update_mirror()
-{
-	cat > ports.sources << EOL
-Types: deb
-URIs: $1
-Suites: noble noble-updates noble-backports noble-security
-Components: main universe restricted multiverse
-Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
-EOL
-	sudo mv ports.sources $PORTS_MIRROR
-	sudo chown root:root $PORTS_MIRROR
 }
 
 install_cam_ai_samples()
@@ -190,7 +158,7 @@ main() {
 	echo "  Version $VERSION"
 	echo "======================="
 
-	local reboot=0
+	local reboot=1
 
 	# Parse arguments and execute accordingly
 	while [ "$#" -gt 0 ]; do
@@ -198,17 +166,6 @@ main() {
 			-h|--help)
 				usage
 				exit 0
-				;;
-			--mirror=*)
-				mirror="${1#*=}"
-				if [ -z "$mirror" ]; then
-					echo "Error: mirror cannot be empty"
-					exit 1
-				fi
-				update_mirror $mirror
-				;;
-			--reboot)
-				reboot=1
 				;;
 			*)
 				echo "Unknown option: $1"
