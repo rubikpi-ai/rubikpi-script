@@ -9,7 +9,7 @@ Execute the following command on the RUBIK Pi 3 terminal:
 ### Prerequisites:
 
 ```bash
-git clone -b ubuntu_setup_dev --single-branch https://github.com/rubikpi-ai/rubikpi-script.git
+git clone -b ubuntu_setup --single-branch https://github.com/rubikpi-ai/rubikpi-script.git
 cd rubikpi-script
 ```
 
