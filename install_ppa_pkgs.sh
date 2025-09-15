@@ -232,7 +232,7 @@ uninstall()
 	sudo sed -i '/export GST_DBG_EXPORT=/d' /root/.bashrc
 	remove_ppa
 	sudo apt update
-	sudo apt purge -y ${PKG_LIST[@]} rubikpi3-cameras
+	sudo apt purge -y ${PKG_LIST[@]} rubikpi3-cameras || true
 	sudo apt autoremove --purge -y
 }
 
