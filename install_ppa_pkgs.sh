@@ -97,6 +97,7 @@ add_cam_ai_pkgs()
 {
 	# CAM/AI -- QCOM PPA
 	PKG_LIST+=(
+		gstreamer1.0-plugins-base-apps
 		gstreamer1.0-qcom-python-examples
 		gstreamer1.0-qcom-sample-apps
 		gstreamer1.0-tools
@@ -128,6 +129,7 @@ add_system_pkgs()
 	PKG_LIST+=(
 		ffmpeg
 		net-tools
+		pulseaudio-utils
 		python3-pip
 		selinux-utils
 		unzip
