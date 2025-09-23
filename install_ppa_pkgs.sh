@@ -99,6 +99,15 @@ usage() {
 	printf "  %s --mirror=https://mirrors.ustc.edu.cn/ubuntu-ports\t\t# China mirror\n" "$0"
 }
 
+check_desktop_build() {
+    if dpkg -l | grep -q '^ii  ubuntu-desktop'; then
+        echo "Desktop build detected (ubuntu-desktop). Exiting script."
+        exit 0
+    fi
+
+    echo "Desktop build not detected. Continuing script..."
+}
+
 add_ppa()
 {
 	# TODO: Remove legacy
@@ -191,6 +200,7 @@ add_ide_pkgs()
 		snpe-tools
 		tensorflow-lite-qcom-apps
 		v4l-utils
+		xwayland
 	)
 }
 
@@ -313,6 +323,7 @@ main() {
 		add_system_pkgs
 		uninstall
 	else
+		check_desktop_build
 		add_ppa
 		install_cam_ai_samples
 		[ $ide -eq 1 ] && setup_ide
