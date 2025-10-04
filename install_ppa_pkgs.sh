@@ -67,6 +67,15 @@ usage() {
 	printf "\033[1;37m  -h, --help\033[0m              Display this help message\n"
 }
 
+check_desktop_build() {
+    if dpkg -l | grep -q '^ii  ubuntu-desktop'; then
+        echo "Desktop build detected (ubuntu-desktop). Exiting script."
+        exit 0
+    fi
+
+    echo "Desktop build not detected. Continuing script..."
+}
+
 add_ppa()
 {
 	# TODO: Remove legacy
@@ -112,6 +121,7 @@ add_cam_ai_pkgs()
 		snpe-tools
 		tensorflow-lite-qcom-apps
 		weston-autostart
+		xwayland
 	)
 }
 
@@ -179,6 +189,7 @@ main() {
 		shift
 	done
 
+	check_desktop_build
 	add_ppa
 	install_cam_ai_samples
 	add_rubikpi_pkgs
