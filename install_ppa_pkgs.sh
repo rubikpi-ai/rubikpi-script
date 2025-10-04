@@ -152,8 +152,6 @@ install_cam_ai_samples()
 	sudo chown -R ubuntu /opt
 	grep -qxF "$XDG_EXPORT" $USER_HOME/.bashrc || echo "$XDG_EXPORT" >> $USER_HOME/.bashrc
 	sudo bash -c "grep -qxF '${XDG_EXPORT}' /root/.bashrc || echo '${XDG_EXPORT}' >> /root/.bashrc"
-	sudo mkdir -p /var/cache/camera
-	sudo sh -c "echo 'enableNCSService=FALSE' > $CAMERA_SETTINGS"
 	add_cam_ai_pkgs
 }
 
@@ -226,7 +224,11 @@ install()
 {
 	sudo apt install -y ${PKG_LIST[@]}
 	sudo ln -sf libOpenCL.so.1 /usr/lib/aarch64-linux-gnu/libOpenCL.so # Fix for snpe-tools
-	sudo apt install -y rubikpi3-cameras
+    if ! dpkg -s qcom-chicdk-qcm6490-rubikpi3 >/dev/null 2>&1; then
+		sudo mkdir -p /var/cache/camera
+		sudo sh -c "echo 'enableNCSService=FALSE' > $CAMERA_SETTINGS"
+		sudo apt install -y rubikpi3-cameras
+	fi
 	sudo apt upgrade -y
 }
 
