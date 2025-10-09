@@ -224,7 +224,6 @@ add_system_pkgs()
 install()
 {
 	sudo apt install -y ${PKG_LIST[@]}
-	sudo ln -sf libOpenCL.so.1 /usr/lib/aarch64-linux-gnu/libOpenCL.so # Fix for snpe-tools
     if ! dpkg -s qcom-chicdk-qcm6490-rubikpi3 >/dev/null 2>&1; then
 		sudo mkdir -p /var/cache/camera
 		sudo sh -c "echo 'enableNCSService=FALSE' > $CAMERA_SETTINGS"
