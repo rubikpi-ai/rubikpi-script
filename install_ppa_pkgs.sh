@@ -94,7 +94,8 @@ add_ppa()
 
 install_cam_ai_samples()
 {
-	sudo chown -R ubuntu /opt
+	sudo mkdir -p /etc/media
+	sudo chown -R ubuntu /etc/media
 	grep -qxF "$XDG_EXPORT" $USER_HOME/.bashrc || echo "$XDG_EXPORT" >> $USER_HOME/.bashrc
 	sudo bash -c "grep -qxF '${XDG_EXPORT}' /root/.bashrc || echo '${XDG_EXPORT}' >> /root/.bashrc"
 	add_cam_ai_pkgs
