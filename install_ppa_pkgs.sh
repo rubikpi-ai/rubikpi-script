@@ -77,6 +77,7 @@ usage() {
 	printf "\033[1;37m  --ide\033[0m                   Install IDE related pkgs and settings\n"
 	printf "\033[1;37m  --mirror=<URI>\033[0m          Update the ubuntu-ports mirror\n"
 	printf "\033[1;37m  --reboot\033[0m                Reboot at the end of the process\n"
+	printf "\033[1;37m  --server\033[0m                Switch to server version\n"
 	printf "\033[1;37m  --uninstall\033[0m             Uninstall everything related to this script\n"
 	printf "\n"
 	printf "\033[1;37mExamples:\033[0m\n"
@@ -193,12 +194,19 @@ add_cam_ai_pkgs()
 		gstreamer1.0-plugins-base-apps
 		gstreamer1.0-qcom-sample-apps
 		gstreamer1.0-tools
-		qcom-adreno1
 		qcom-fastcv-binaries-dev
 		qcom-sensors-test-apps
 		qcom-video-firmware
-		weston-autostart
 	)
+	[ $server -eq 1 ] &&
+	PKG_LIST+=(
+		gdm3-
+		ubuntu-desktop-
+		ubuntu-desktop-minimal-
+
+		qcom-adreno1
+		weston-autostart
+	) || true
 }
 
 add_ide_pkgs()
@@ -218,8 +226,11 @@ add_ide_pkgs()
 		snpe-tools
 		tensorflow-lite-qcom-apps
 		v4l-utils
-		xwayland
 	)
+	[ $server -eq 1 ] &&
+	PKG_LIST+=(
+		xwayland
+	) || true
 }
 
 add_rubikpi_pkgs()
@@ -295,6 +306,7 @@ main() {
 	local desktop=0
 	local ide=0
 	local reboot=0
+	local server=0
 	local uninstall=0
 
 	# Parse arguments and execute accordingly
@@ -329,6 +341,9 @@ main() {
 			--reboot)
 				reboot=1
 				;;
+			--server)
+				server=1
+				;;
 			--uninstall)
 				uninstall=1
 				;;
@@ -356,13 +371,15 @@ main() {
 			sync; sync; sync
 			exit
 		fi
-		check_desktop_build
+		[ $server -eq 0 ] && check_desktop_build
 		add_ppa
 		install_cam_ai_samples
 		[ $ide -eq 1 ] && setup_ide
 		add_rubikpi_pkgs
 		add_system_pkgs
 		install
+		sudo apt autoremove -y
+		sudo dpkg-reconfigure weston-autostart
 	fi
 
 	finalize
