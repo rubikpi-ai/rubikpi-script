@@ -72,13 +72,16 @@ usage() {
 	printf "\n"
 	printf "\033[1;37mOptions:\033[0m\n"
 	printf "\033[1;37m  -h, --help\033[0m              Display this help message\n"
+	printf "\033[1;37m  --desktop\033[0m               Switch to desktop version\n"
 	printf "\033[1;37m  --hostname=<name>\033[0m       Set system hostname to specified name\n"
+	printf "\033[1;37m  --ide\033[0m                   Install IDE related pkgs and settings\n"
 	printf "\033[1;37m  --mirror=<URI>\033[0m          Update the ubuntu-ports mirror\n"
 	printf "\033[1;37m  --reboot\033[0m                Reboot at the end of the process\n"
 	printf "\033[1;37m  --uninstall\033[0m             Uninstall everything related to this script\n"
 	printf "\n"
 	printf "\033[1;37mExamples:\033[0m\n"
 	printf "  %s                          # Install IM SDK pkgs\n" "$0"
+	printf "  %s --desktop                # Switch to desktop version\n" "$0"
 	printf "  %s --ide                    # Install IM SDK & IDE pkgs, and IDE related settings\n" "$0"
 	printf "  %s --hostname=mypi          # Install IM SDK pkgs, and set hostname\n" "$0"
 	printf "  %s --reboot                 # Install IM SDK pkgs, and reboot\n" "$0"
@@ -165,6 +168,22 @@ setup_ide()
 	grep -qxF "$GST_DBG_EXPORT" $USER_HOME/.bashrc || echo "$GST_DBG_EXPORT" >> $USER_HOME/.bashrc
 	sudo bash -c "grep -qxF '${GST_DBG_EXPORT}' /root/.bashrc || echo '${GST_DBG_EXPORT}' >> /root/.bashrc"
 	add_ide_pkgs
+}
+
+add_desktop_pkgs()
+{
+	PKG_LIST+=(
+		libgbm-msm1-
+		qcom-adreno1-
+		weston-autostart-
+
+		libegl-mesa0
+		libegl1
+		libgles2
+		libglvnd0
+		libvulkan1
+		ubuntu-desktop-minimal
+	)
 }
 
 add_cam_ai_pkgs()
@@ -273,6 +292,7 @@ main() {
 	echo "======================="
 
 	local hostname=RUBIKPi3
+	local desktop=0
 	local ide=0
 	local reboot=0
 	local uninstall=0
@@ -283,6 +303,9 @@ main() {
 			-h|--help)
 				usage
 				exit 0
+				;;
+			--desktop)
+				desktop=1
 				;;
 			--hostname=*)
 				hostname="${1#*=}"
@@ -325,6 +348,14 @@ main() {
 		add_system_pkgs
 		uninstall
 	else
+		if [ $desktop -eq 1 ]; then
+			add_desktop_pkgs
+			install
+			sudo systemctl restart gdm3
+			sudo apt autoremove -y
+			sync; sync; sync
+			exit
+		fi
 		check_desktop_build
 		add_ppa
 		install_cam_ai_samples
