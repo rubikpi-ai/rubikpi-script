@@ -115,7 +115,6 @@ add_cam_ai_pkgs()
 		qcom-fastcv-binaries-dev
 		qcom-libdmabufheap-dev
 		qcom-sensors-test-apps
-		qcom-video-firmware
 		qnn-tools
 		snpe-tools
 		tensorflow-lite-qcom-apps
