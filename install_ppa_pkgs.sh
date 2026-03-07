@@ -196,7 +196,6 @@ add_cam_ai_pkgs()
 		gstreamer1.0-tools
 		qcom-fastcv-binaries-dev
 		qcom-sensors-test-apps
-		qcom-video-firmware
 	)
 	[ $server -eq 1 ] &&
 	PKG_LIST+=(
